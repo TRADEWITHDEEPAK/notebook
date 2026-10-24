@@ -4,96 +4,88 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>My Notebook</title>
-<meta name="theme-color" content="#7719aa">
+<meta name="theme-color" content="#0f1730">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <style>
-:root{--bg:#fff;--panel:#f5f3f7;--line:#e1dde6;--text:#201f24;--mute:#6e6a76;--acc:#7719aa;--sel:#ebdcf3;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#1c1b20;--panel:#26242b;--line:#3a3742;--text:#ececf0;--mute:#9a96a3;--acc:#c28be3;--sel:#3b2a47;color-scheme:dark}}
-*{box-sizing:border-box}
+:root{--bg:#0f1730;--panel:#131d38;--row:#1b2644;--line:#2a3858;--text:#e8ebf4;--mute:#8d99b8;--acc:#edc55a;--ink:#14203d;--sel:#26355e;color-scheme:dark}
+*{box-sizing:border-box;scrollbar-color:var(--line) transparent}
 html,body{height:100%;margin:0}
 body{font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
 button,select,input{font:inherit;color:inherit}
-button{background:none;border:0;border-radius:4px;padding:5px 9px;cursor:pointer}
+button{background:none;border:0;border-radius:6px;padding:5px 9px;cursor:pointer}
 button:hover{background:var(--sel)}
+::placeholder{color:var(--mute)}
 :focus-visible{outline:2px solid var(--acc);outline-offset:1px}
-#top{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--acc);color:#fff}
-#top select{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:4px;padding:5px 8px;max-width:50vw}
-#top select option{color:#000}
-#top button{color:#fff}#top button:hover{background:rgba(255,255,255,.2)}
-#top .sp{flex:1}
-#status{font-size:12px;opacity:.85}
-#tabs{display:flex;gap:2px;padding:6px 12px 0;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
-.tab{padding:6px 14px;border-radius:6px 6px 0 0;border-top:4px solid var(--c);background:color-mix(in srgb,var(--c) 14%,var(--panel));cursor:pointer}
-.tab.on{background:var(--bg);font-weight:600}
-#main{flex:1;display:flex;min-height:0}
-#list{width:250px;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
-#list .bar{display:flex;gap:6px;padding:8px}
-#q{flex:1;min-width:0;border:1px solid var(--line);border-radius:4px;padding:5px 8px;background:var(--bg)}
-#pages{overflow:auto;flex:1}
-.pg{padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer}
-.pg.on{background:var(--sel);box-shadow:inset 3px 0 var(--acc)}
-.pg b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pg small{color:var(--mute)}
-#ed{flex:1;display:flex;flex-direction:column;min-width:0}
-#tools{display:flex;flex-wrap:wrap;gap:2px;padding:6px 12px;border-bottom:1px solid var(--line)}
-#tools button{min-width:32px}
+[style*="var(--acc)"]{color:var(--ink)!important}
+#top{display:flex;align-items:center;gap:8px;padding:10px 18px;border-bottom:1px solid var(--line)}
+#top h1{margin:0;font-size:18px;color:var(--acc)}
+#top .sp{flex:1}#top button{border:1px solid var(--line);color:var(--acc)}
+#status{font-size:12px;color:var(--mute)}
+#cols{flex:1;display:grid;grid-template-columns:repeat(3,minmax(180px,1fr)) minmax(0,2.4fr);gap:14px;padding:14px;min-height:0}
+#nav{display:contents}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;min-height:0;min-width:0}
+.card header{display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:8px;margin-bottom:12px}
+.card h3{margin:0;font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--acc)}
+.card header button{color:var(--acc);font-size:16px;padding:2px 8px}
+.rows{overflow:auto;flex:1;display:flex;flex-direction:column;gap:6px}
+.rows>div{display:flex;align-items:baseline;gap:8px;background:var(--row);border:1px solid var(--line);border-radius:8px;padding:9px 12px;cursor:pointer}
+.rows>div:hover{border-color:var(--acc)}
+.rows>div.on{background:var(--acc);border-color:var(--acc);color:var(--ink);font-weight:600}
+#nbList>div::before{content:"🗂️"}#tabs>div::before{content:"📁"}.pg::before{content:"📄"}
+.tab{box-shadow:inset 4px 0 var(--c)}
+.pg b{flex:1;min-width:0;font-weight:inherit;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg small{font-size:11px;opacity:.65}
+#q{border:1px solid var(--line);border-radius:8px;padding:7px 10px;background:var(--row);margin-bottom:8px}
+.empty{color:var(--mute);padding:10px}
+#edIn{flex:1;display:flex;flex-direction:column;min-height:0}
+#tools{display:flex;flex-wrap:wrap;gap:4px;padding-bottom:8px}
+#tools button{min-width:32px;background:var(--row);border:1px solid var(--line)}
+#tools button:hover{background:var(--sel)}
 #back{display:none}
-#title{border:0;background:none;font-size:28px;font-weight:600;padding:16px 28px 0;outline:0;width:100%}
-#when{color:var(--mute);font-size:12px;padding:0 28px 8px;border-bottom:1px solid var(--line);margin:0 0 8px}
-#body{flex:1;overflow:auto;padding:8px 28px 60px;outline:0;max-width:820px}
-#body h2{font-size:20px;margin:.6em 0 .2em}
-#body input[type=checkbox]{margin-right:8px;transform:scale(1.2)}
-#body mark{background:#ffe55c;color:#000}
-.empty{padding:40px;color:var(--mute)}
-dialog{border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);max-width:440px;width:92vw}
-dialog label{display:block;margin:10px 0 2px;font-size:13px;color:var(--mute)}
-dialog input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--bg)}
-dialog p{font-size:13px;color:var(--mute)}
-@media(max-width:760px){
-#list{width:100%;border:0}#ed{display:none}
-body.edit #list{display:none}body.edit #ed{display:flex}
-#back{display:inline-block}#title{font-size:22px;padding:12px 16px 0}#when{padding:0 16px 8px}#body{padding:8px 16px 60px}}
+#title{border:0;background:none;font-size:26px;font-weight:600;padding:8px 2px 0;outline:0;width:100%}
+#when{color:var(--mute);font-size:12px;padding:0 2px 8px;border-bottom:1px solid var(--line);margin-bottom:8px}
+#body{flex:1;overflow:auto;padding:4px 2px 40px;outline:0}
+#body h2{font-size:20px;margin:.6em 0 .2em;color:var(--acc)}
+#body input[type=checkbox]{margin-right:8px;transform:scale(1.2);accent-color:var(--acc)}
+#body [style*="background-color"],#body mark{color:var(--ink)}
 #body table{border-collapse:collapse;margin:8px 0;max-width:100%}
 #body td{border:1px solid var(--line);padding:6px 10px;min-width:70px;vertical-align:top}
 #body img{max-width:100%;height:auto;border-radius:4px}
+dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);max-width:440px;width:92vw}
+dialog::backdrop{background:rgba(5,9,22,.7)}
+dialog label{display:block;margin:10px 0 2px;font-size:13px;color:var(--mute)}
+dialog input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:6px;background:var(--row)}
+dialog p{font-size:13px;color:var(--mute)}
 #lock{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
 #lock[hidden]{display:none}
-#lock input{padding:9px 10px;border:1px solid var(--line);border-radius:6px;width:260px;max-width:100%;background:var(--bg)}
-#lock button{background:var(--acc);color:#fff}#lock #lockX{background:none;color:var(--text)}
-#drw{max-width:740px}#drw canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:4px;touch-action:none;cursor:crosshair;background:#fff}
+#lock input{padding:9px 10px;border:1px solid var(--line);border-radius:8px;width:260px;max-width:100%;background:var(--row)}
+#lock button{background:var(--acc);color:var(--ink)}#lock #lockX{background:none;color:var(--text)}
+#drw{max-width:740px}#drw canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:6px;touch-action:none;cursor:crosshair;background:#fff}
 .dt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}.dt input[type=color]{width:38px;height:30px;padding:0}.dt input[type=range]{width:110px;padding:0}
+@media(max-width:900px){#cols{display:flex;flex-direction:column;gap:10px;padding:10px}#nav{display:flex;gap:10px;overflow-x:auto;flex:none}#nav .card{flex:0 0 74vw;max-height:34vh}#ed{flex:1}#top h1{font-size:16px}#title{font-size:22px}}
 </style>
 </head>
 <body>
-<div id="top">
-  <select id="nbSel" aria-label="Notebook"></select>
-  <button id="nbAdd" title="New notebook">+ Notebook</button>
-  <button id="nbMenu" title="Rename or delete notebook">⋯</button>
-  <span class="sp"></span><span id="status"></span>
-  <button id="lockBtn">🔒 Lock</button><button id="cfgBtn">Sync</button>
-</div>
-<div id="tabs"></div>
-<div id="main">
-  <aside id="list">
-    <div class="bar"><input id="q" type="search" placeholder="Search notebook"><button id="pgAdd">+ Page</button></div>
-    <div id="pages"></div>
-  </aside>
-  <section id="ed">
-    <div id="tools">
-      <button id="back">← Pages</button>
-      <button data-c="bold"><b>B</b></button><button data-c="italic"><i>I</i></button><button data-c="underline"><u>U</u></button>
-      <button data-c="strikeThrough"><s>S</s></button>
-      <button data-c="formatBlock" data-v="h2">Heading</button><button data-c="formatBlock" data-v="p">Text</button>
-      <button data-c="insertUnorderedList">• List</button><button data-c="insertOrderedList">1. List</button>
-      <button id="chk">☐ To‑do</button><button id="hl">Highlight</button>
-      <button id="imgBtn">Image</button><button id="drawBtn">Draw</button>
-      <button data-t="new">Table</button><button data-t="row">+ Row</button><button data-t="col">+ Column</button><button data-t="del">Delete table</button>
-      <button id="secMenu" title="Rename or delete section">Section ⋯</button><button id="pgDel">Delete page</button>
+<div id="top"><h1>My Notebook</h1><span class="sp"></span><span id="status"></span><button id="lockBtn">🔒 Lock</button><button id="cfgBtn">Sync</button></div>
+<div id="cols">
+  <div id="nav">
+    <section class="card"><header><h3>Notebooks</h3><span><button id="nbAdd" title="New notebook">＋</button><button id="nbMenu" title="Rename or delete notebook">⋯</button></span></header><div id="nbList" class="rows"></div></section>
+    <section class="card"><header><h3>Sections</h3><span><button id="secAdd" title="New section">＋</button><button id="secMenu" title="Rename or delete section">⋯</button></span></header><div id="tabs" class="rows"></div></section>
+    <section class="card"><header><h3>Tabs</h3><span><button id="pgAdd" title="New tab">＋</button><button id="pgDel" title="Delete tab">🗑</button></span></header><input id="q" type="search" placeholder="Search this notebook"><div id="pages" class="rows"></div></section>
+  </div>
+  <section id="ed" class="card"><header><h3>Content</h3></header>
+    <div id="edIn">
+      <div id="tools"><button id="back">Back</button>
+        <button data-c="bold"><b>B</b></button><button data-c="italic"><i>I</i></button><button data-c="underline"><u>U</u></button><button data-c="strikeThrough"><s>S</s></button>
+        <button data-c="formatBlock" data-v="h2">Heading</button><button data-c="formatBlock" data-v="p">Text</button>
+        <button data-c="insertUnorderedList">• List</button><button data-c="insertOrderedList">1. List</button>
+        <button id="chk">☐ To-do</button><button id="hl">Highlight</button><button id="imgBtn">Image</button><button id="drawBtn">Draw</button>
+        <button data-t="new">Table</button><button data-t="row">+ Row</button><button data-t="col">+ Column</button><button data-t="del">Delete table</button></div>
+      <input id="title" placeholder="Untitled tab" aria-label="Tab title">
+      <div id="when"></div>
+      <div id="body" contenteditable="true" spellcheck="true" aria-label="Tab content"></div>
     </div>
-    <input id="title" placeholder="Untitled page" aria-label="Page title">
-    <div id="when"></div>
-    <div id="body" contenteditable="true" spellcheck="true" aria-label="Page content"></div>
   </section>
 </div>
 
@@ -153,18 +145,18 @@ async function push(){
 /* ---------- rendering ---------- */
 function fix(){if(cur.nb>=S.nbs.length)cur.nb=0;if(cur.sec>=NB().secs.length)cur.sec=0;const s=SEC();if(s&&!s.pgs.find(p=>p.id===cur.pg))cur.pg=s.pgs[0]?s.pgs[0].id:null}
 function render(){
-  $('#nbSel').innerHTML=S.nbs.map((n,i)=>`<option value="${i}" ${i==cur.nb?'selected':''}>${esc(n.name)}</option>`).join('');
-  $('#tabs').innerHTML=NB().secs.map((s,i)=>`<div class="tab ${i==cur.sec?'on':''}" style="--c:${s.color}" data-i="${i}">${esc(s.name)}</div>`).join('')+'<button id="secAdd">+ Section</button>';
+  $('#nbList').innerHTML=S.nbs.map((n,i)=>`<div class="${i==cur.nb?'on':''}" data-i="${i}">${esc(n.name)}</div>`).join('');
+  $('#tabs').innerHTML=NB().secs.map((s,i)=>`<div class="tab ${i==cur.sec?'on':''}" style="--c:${s.color}" data-i="${i}">${esc(s.name)}</div>`).join('');
   renderList();renderEditor();
 }
 function renderList(){
   const q=$('#q').value.trim().toLowerCase();let items;
   if(q){items=[];NB().secs.forEach((s,si)=>s.pgs.forEach(p=>{if((p.title+' '+strip(p.html)).toLowerCase().includes(q))items.push({p,si,s})}))}
   else items=(SEC()?SEC().pgs:[]).map(p=>({p,si:cur.sec,s:SEC()}));
-  $('#pages').innerHTML=items.length?items.map(({p,si,s})=>`<div class="pg ${p.id==cur.pg?'on':''}" data-id="${p.id}" data-si="${si}"><b>${esc(p.title||'Untitled page')}</b><small>${q?esc(s.name)+' · ':''}${new Date(p.t).toLocaleDateString()}</small></div>`).join(''):'<div class="empty">No pages. Select “+ Page”.</div>';
+  $('#pages').innerHTML=items.length?items.map(({p,si,s})=>`<div class="pg ${p.id==cur.pg?'on':''}" data-id="${p.id}" data-si="${si}"><b>${esc(p.title||'Untitled tab')}</b><small>${q?esc(s.name)+' · ':''}${new Date(p.t).toLocaleDateString()}</small></div>`).join(''):'<div class="empty">No tabs yet. Select ＋ to add one.</div>';
 }
 function renderEditor(){
-  const p=PG();$('#ed').style.visibility=p?'visible':'hidden';if(!p)return;
+  const p=PG();$('#edIn').style.visibility=p?'visible':'hidden';if(!p)return;
   $('#title').value=p.title;$('#body').innerHTML=p.html;
   $('#when').textContent=new Date(p.t).toLocaleString([], {dateStyle:'full',timeStyle:'short'});
 }
@@ -172,7 +164,7 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 const strip=h=>{const d=document.createElement('div');d.innerHTML=h;return d.textContent};
 
 /* ---------- events ---------- */
-$('#nbSel').onchange=e=>{cur.nb=+e.target.value;cur.sec=0;cur.pg=null;fix();render()};
+$('#nbList').onclick=e=>{const d=e.target.closest('[data-i]');if(!d)return;cur.nb=+d.dataset.i;cur.sec=0;cur.pg=null;$('#q').value='';fix();render()};
 $('#nbAdd').onclick=()=>{const n=prompt('Notebook name');if(!n)return;S.nbs.push({id:uid(),name:n,secs:[{id:uid(),name:'New Section',color:COL[0],pgs:[]}]});cur={nb:S.nbs.length-1,sec:0,pg:null};save();render()};
 $('#nbMenu').onclick=()=>{const a=prompt('Type a new name to rename this notebook, or type DELETE to remove it.',NB().name);if(!a)return;
   if(a==='DELETE'){if(S.nbs.length<2)return alert('Keep at least one notebook.');if(!confirm('Delete this notebook and all its pages?'))return;S.nbs.splice(cur.nb,1);cur={nb:0,sec:0,pg:null}}else NB().name=a;save();fix();render()};
@@ -182,7 +174,7 @@ $('#tabs').onclick=e=>{
 $('#secMenu').onclick=()=>{const a=prompt('Type a new name to rename this section, or type DELETE to remove it.',SEC().name);if(!a)return;
   if(a==='DELETE'){if(NB().secs.length<2)return alert('Keep at least one section.');if(!confirm('Delete this section and its pages?'))return;NB().secs.splice(cur.sec,1);cur.sec=0;cur.pg=null}else SEC().name=a;save();fix();render()};
 $('#pgAdd').onclick=()=>{const p={id:uid(),title:'',html:'<p><br></p>',t:Date.now()};SEC().pgs.unshift(p);cur.pg=p.id;$('#q').value='';save();render();document.body.classList.add('edit');$('#title').focus()};
-$('#pgDel').onclick=()=>{if(!PG()||!confirm('Delete this page?'))return;const s=SEC();s.pgs=s.pgs.filter(p=>p.id!==cur.pg);cur.pg=null;save();fix();render();document.body.classList.remove('edit')};
+$('#pgDel').onclick=()=>{if(!PG()||!confirm('Delete this tab?'))return;const s=SEC();s.pgs=s.pgs.filter(p=>p.id!==cur.pg);cur.pg=null;save();fix();render();document.body.classList.remove('edit')};
 $('#pages').onclick=e=>{const d=e.target.closest('.pg');if(!d)return;cur.sec=+d.dataset.si;cur.pg=d.dataset.id;render();document.body.classList.add('edit')};
 $('#back').onclick=()=>document.body.classList.remove('edit');
 $('#q').oninput=renderList;
@@ -249,6 +241,7 @@ function tbl(a){
   $('#body').oninput()}
 $('#tools').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b)tbl(b.dataset.t)});
 
+$('#secAdd').onclick=()=>$('#tabs').onclick({target:$('#secAdd')});
 (async()=>{await load();fix();render();pull()})();
 </script>
 </body>

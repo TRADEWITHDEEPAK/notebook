@@ -32,7 +32,8 @@ Your notes are NOT stored in this repo. They live in a second, private repo (`my
 
 ## Features
 
-- Notebooks, colored section tabs, page list, search
+- Navy and gold, four-column layout: Notebooks, Sections, Tabs, and the selected tab's content
+- Search across a notebook
 - Bold, italic, underline, strikethrough, headings, lists, to-dos, highlight
 - Tables (insert, add row, add column, delete)
 - Images (upload or paste; auto-resized; double-click an image to remove it)
