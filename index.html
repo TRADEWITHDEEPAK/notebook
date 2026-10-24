@@ -64,10 +64,14 @@ dialog p{font-size:13px;color:var(--mute)}
 #drw{max-width:740px}#drw canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:6px;touch-action:none;cursor:crosshair;background:#fff}
 .dt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}.dt input[type=color]{width:38px;height:30px;padding:0}.dt input[type=range]{width:110px;padding:0}
 @media(max-width:900px){#cols{display:flex;flex-direction:column;gap:10px;padding:10px}#nav{display:flex;gap:10px;overflow-x:auto;flex:none}#nav .card{flex:0 0 74vw;max-height:34vh}#ed{flex:1}#top h1{font-size:16px}#title{font-size:22px}}
+#ws{flex:1;max-width:560px;margin:0 auto;display:flex;gap:6px}
+#ws input{flex:1;min-width:0;border:1px solid var(--line);border-radius:8px;padding:6px 12px;background:var(--row)}
+#ws button{background:var(--acc);color:var(--ink);font-weight:600;border:0}
+@media(max-width:900px){#top{flex-wrap:wrap}#ws{order:3;flex-basis:100%;max-width:none;margin:0}#status{margin-left:auto}}
 </style>
 </head>
 <body>
-<div id="top"><h1>My Notebook</h1><span class="sp"></span><span id="status"></span><button id="lockBtn">🔒 Lock</button><button id="cfgBtn">Sync</button></div>
+<div id="top"><h1>My Notebook</h1><form id="ws" role="search"><input id="wq" type="search" placeholder="Search the web…" aria-label="Search the web" title="Opens Google results in a new browser tab"><button>Search ↗</button></form><span id="status"></span><button id="lockBtn">🔒 Lock</button><button id="cfgBtn">Sync</button></div>
 <div id="cols">
   <div id="nav">
     <section class="card"><header><h3>Notebooks</h3><span><button id="nbAdd" title="New notebook">＋</button><button id="nbMenu" title="Rename or delete notebook">⋯</button></span></header><div id="nbList" class="rows"></div></section>
@@ -241,6 +245,7 @@ function tbl(a){
   $('#body').oninput()}
 $('#tools').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b)tbl(b.dataset.t)});
 
+$('#ws').onsubmit=e=>{e.preventDefault();const q=$('#wq').value.trim();if(q)window.open('https://www.google.com/search?q='+encodeURIComponent(q),'_blank','noopener')};
 $('#secAdd').onclick=()=>$('#tabs').onclick({target:$('#secAdd')});
 (async()=>{await load();fix();render();pull()})();
 </script>
