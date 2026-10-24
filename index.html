@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Notebook</title>
+<style>
+:root{--bg:#fff;--panel:#f5f3f7;--line:#e1dde6;--text:#201f24;--mute:#6e6a76;--acc:#7719aa;--sel:#ebdcf3;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#1c1b20;--panel:#26242b;--line:#3a3742;--text:#ececf0;--mute:#9a96a3;--acc:#c28be3;--sel:#3b2a47;color-scheme:dark}}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:15px/1.5 "Segoe UI",system-ui,-apple-system,Roboto,sans-serif;background:var(--bg);color:var(--text);display:flex;flex-direction:column}
+button,select,input{font:inherit;color:inherit}
+button{background:none;border:0;border-radius:4px;padding:5px 9px;cursor:pointer}
+button:hover{background:var(--sel)}
+:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+#top{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--acc);color:#fff}
+#top select{background:rgba(255,255,255,.18);color:#fff;border:0;border-radius:4px;padding:5px 8px;max-width:50vw}
+#top select option{color:#000}
+#top button{color:#fff}#top button:hover{background:rgba(255,255,255,.2)}
+#top .sp{flex:1}
+#status{font-size:12px;opacity:.85}
+#tabs{display:flex;gap:2px;padding:6px 12px 0;background:var(--panel);border-bottom:1px solid var(--line);overflow-x:auto;white-space:nowrap}
+.tab{padding:6px 14px;border-radius:6px 6px 0 0;border-top:4px solid var(--c);background:color-mix(in srgb,var(--c) 14%,var(--panel));cursor:pointer}
+.tab.on{background:var(--bg);font-weight:600}
+#main{flex:1;display:flex;min-height:0}
+#list{width:250px;border-right:1px solid var(--line);background:var(--panel);display:flex;flex-direction:column}
+#list .bar{display:flex;gap:6px;padding:8px}
+#q{flex:1;min-width:0;border:1px solid var(--line);border-radius:4px;padding:5px 8px;background:var(--bg)}
+#pages{overflow:auto;flex:1}
+.pg{padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer}
+.pg.on{background:var(--sel);box-shadow:inset 3px 0 var(--acc)}
+.pg b{display:block;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pg small{color:var(--mute)}
+#ed{flex:1;display:flex;flex-direction:column;min-width:0}
+#tools{display:flex;flex-wrap:wrap;gap:2px;padding:6px 12px;border-bottom:1px solid var(--line)}
+#tools button{min-width:32px}
+#back{display:none}
+#title{border:0;background:none;font-size:28px;font-weight:600;padding:16px 28px 0;outline:0;width:100%}
+#when{color:var(--mute);font-size:12px;padding:0 28px 8px;border-bottom:1px solid var(--line);margin:0 0 8px}
+#body{flex:1;overflow:auto;padding:8px 28px 60px;outline:0;max-width:820px}
+#body h2{font-size:20px;margin:.6em 0 .2em}
+#body input[type=checkbox]{margin-right:8px;transform:scale(1.2)}
+#body mark{background:#ffe55c;color:#000}
+.empty{padding:40px;color:var(--mute)}
+dialog{border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--text);max-width:440px;width:92vw}
+dialog label{display:block;margin:10px 0 2px;font-size:13px;color:var(--mute)}
+dialog input{width:100%;padding:6px 8px;border:1px solid var(--line);border-radius:4px;background:var(--bg)}
+dialog p{font-size:13px;color:var(--mute)}
+@media(max-width:760px){
+#list{width:100%;border:0}#ed{display:none}
+body.edit #list{display:none}body.edit #ed{display:flex}
+#back{display:inline-block}#title{font-size:22px;padding:12px 16px 0}#when{padding:0 16px 8px}#body{padding:8px 16px 60px}}
+</style>
+</head>
+<body>
+<div id="top">
+  <select id="nbSel" aria-label="Notebook"></select>
+  <button id="nbAdd" title="New notebook">+ Notebook</button>
+  <button id="nbMenu" title="Rename or delete notebook">⋯</button>
+  <span class="sp"></span><span id="status"></span>
+  <button id="cfgBtn">Sync</button>
+</div>
+<div id="tabs"></div>
+<div id="main">
+  <aside id="list">
+    <div class="bar"><input id="q" type="search" placeholder="Search notebook"><button id="pgAdd">+ Page</button></div>
+    <div id="pages"></div>
+  </aside>
+  <section id="ed">
+    <div id="tools">
+      <button id="back">← Pages</button>
+      <button data-c="bold"><b>B</b></button><button data-c="italic"><i>I</i></button><button data-c="underline"><u>U</u></button>
+      <button data-c="strikeThrough"><s>S</s></button>
+      <button data-c="formatBlock" data-v="h2">Heading</button><button data-c="formatBlock" data-v="p">Text</button>
+      <button data-c="insertUnorderedList">• List</button><button data-c="insertOrderedList">1. List</button>
+      <button id="chk">☐ To‑do</button><button id="hl">Highlight</button>
+      <button id="secMenu" title="Rename or delete section">Section ⋯</button><button id="pgDel">Delete page</button>
+    </div>
+    <input id="title" placeholder="Untitled page" aria-label="Page title">
+    <div id="when"></div>
+    <div id="body" contenteditable="true" spellcheck="true" aria-label="Page content"></div>
+  </section>
+</div>
+
+<dialog id="cfg"><form method="dialog">
+  <h3 style="margin-top:0">Sync across devices</h3>
+  <p>Notes always save on this device. To use them on other devices, add a private GitHub repo and an access token. Do this once on every device.</p>
+  <label>Data repo (owner/name)</label><input id="cRepo" placeholder="yourname/my-notes-data">
+  <label>Access token</label><input id="cTok" type="password" placeholder="github_pat_…">
+  <p id="cMsg"></p>
+  <div style="display:flex;gap:8px;justify-content:flex-end"><button value="x">Close</button><button type="button" id="cSave" style="background:var(--acc);color:#fff">Save &amp; sync</button></div>
+</form></dialog>
+
+<script>
+const $=s=>document.querySelector(s), uid=()=>Math.random().toString(36).slice(2,9);
+const COL=['#7719aa','#0f6cbd','#107c10','#d83b01','#b4009e','#008272'];
+let S,cur={nb:0,sec:0,pg:null},sha=null,timer=null,busy=false;
+
+const fresh=()=>({updated:0,nbs:[{id:uid(),name:'My Notebook',secs:[{id:uid(),name:'Quick Notes',color:COL[0],pgs:[{id:uid(),title:'Welcome',t:Date.now(),html:'<p>Click here and start typing. Use the toolbar for headings, lists and to-dos.</p><p>Open <b>Sync</b> (top right) to use these notes on all your devices.</p>'}]}]}]});
+function load(){try{S=JSON.parse(localStorage.getItem('nb'))}catch(e){}if(!S||!S.nbs||!S.nbs.length)S=fresh()}
+const cfg=()=>{try{return JSON.parse(localStorage.getItem('nbcfg'))||{}}catch(e){return{}}};
+const NB=()=>S.nbs[cur.nb]||S.nbs[0], SEC=()=>NB().secs[cur.sec]||NB().secs[0], PG=()=>SEC()&&SEC().pgs.find(p=>p.id===cur.pg);
+const status=t=>$('#status').textContent=t;
+
+function save(){S.updated=Date.now();localStorage.setItem('nb',JSON.stringify(S));clearTimeout(timer);timer=setTimeout(push,1500);}
+
+/* ---------- GitHub sync ---------- */
+const enc=s=>btoa(unescape(encodeURIComponent(s))), dec=s=>decodeURIComponent(escape(atob(s.replace(/\n/g,''))));
+function api(method,body){const c=cfg();return fetch(`https://api.github.com/repos/${c.repo}/contents/notes.json`,{method,headers:{Authorization:'Bearer '+c.token,Accept:'application/vnd.github+json'},body:body&&JSON.stringify(body)})}
+async function pull(){
+  const c=cfg();if(!c.repo||!c.token){status('Saved on this device');return}
+  try{status('Syncing…');const r=await api('GET');
+    if(r.status===404){sha=null;await push();return}
+    if(!r.ok)throw 0;const j=await r.json();sha=j.sha;const remote=JSON.parse(dec(j.content));
+    if(remote.updated>S.updated){S=remote;localStorage.setItem('nb',JSON.stringify(S));fix();render()}
+    else if(remote.updated<S.updated)await push();
+    status('Synced ✓')}catch(e){status('Sync failed – check Sync settings')}
+}
+async function push(){
+  const c=cfg();if(!c.repo||!c.token||busy){if(!c.repo)status('Saved on this device');return}
+  busy=true;
+  try{status('Syncing…');
+    const body={message:'Update notes',content:enc(JSON.stringify(S))};if(sha)body.sha=sha;
+    let r=await api('PUT',body);
+    if(r.status===409||r.status===422){const g=await api('GET');if(g.ok){sha=(await g.json()).sha;body.sha=sha;r=await api('PUT',body)}}
+    if(!r.ok)throw 0;sha=(await r.json()).content.sha;status('Synced ✓')}
+  catch(e){status('Sync failed – will retry')}
+  busy=false;
+}
+
+/* ---------- rendering ---------- */
+function fix(){if(cur.nb>=S.nbs.length)cur.nb=0;if(cur.sec>=NB().secs.length)cur.sec=0;const s=SEC();if(s&&!s.pgs.find(p=>p.id===cur.pg))cur.pg=s.pgs[0]?s.pgs[0].id:null}
+function render(){
+  $('#nbSel').innerHTML=S.nbs.map((n,i)=>`<option value="${i}" ${i==cur.nb?'selected':''}>${esc(n.name)}</option>`).join('');
+  $('#tabs').innerHTML=NB().secs.map((s,i)=>`<div class="tab ${i==cur.sec?'on':''}" style="--c:${s.color}" data-i="${i}">${esc(s.name)}</div>`).join('')+'<button id="secAdd">+ Section</button>';
+  renderList();renderEditor();
+}
+function renderList(){
+  const q=$('#q').value.trim().toLowerCase();let items;
+  if(q){items=[];NB().secs.forEach((s,si)=>s.pgs.forEach(p=>{if((p.title+' '+strip(p.html)).toLowerCase().includes(q))items.push({p,si,s})}))}
+  else items=(SEC()?SEC().pgs:[]).map(p=>({p,si:cur.sec,s:SEC()}));
+  $('#pages').innerHTML=items.length?items.map(({p,si,s})=>`<div class="pg ${p.id==cur.pg?'on':''}" data-id="${p.id}" data-si="${si}"><b>${esc(p.title||'Untitled page')}</b><small>${q?esc(s.name)+' · ':''}${new Date(p.t).toLocaleDateString()}</small></div>`).join(''):'<div class="empty">No pages. Select “+ Page”.</div>';
+}
+function renderEditor(){
+  const p=PG();$('#ed').style.visibility=p?'visible':'hidden';if(!p)return;
+  $('#title').value=p.title;$('#body').innerHTML=p.html;
+  $('#when').textContent=new Date(p.t).toLocaleString([], {dateStyle:'full',timeStyle:'short'});
+}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const strip=h=>{const d=document.createElement('div');d.innerHTML=h;return d.textContent};
+
+/* ---------- events ---------- */
+$('#nbSel').onchange=e=>{cur.nb=+e.target.value;cur.sec=0;cur.pg=null;fix();render()};
+$('#nbAdd').onclick=()=>{const n=prompt('Notebook name');if(!n)return;S.nbs.push({id:uid(),name:n,secs:[{id:uid(),name:'New Section',color:COL[0],pgs:[]}]});cur={nb:S.nbs.length-1,sec:0,pg:null};save();render()};
+$('#nbMenu').onclick=()=>{const a=prompt('Type a new name to rename this notebook, or type DELETE to remove it.',NB().name);if(!a)return;
+  if(a==='DELETE'){if(S.nbs.length<2)return alert('Keep at least one notebook.');if(!confirm('Delete this notebook and all its pages?'))return;S.nbs.splice(cur.nb,1);cur={nb:0,sec:0,pg:null}}else NB().name=a;save();fix();render()};
+$('#tabs').onclick=e=>{
+  if(e.target.id==='secAdd'){const n=prompt('Section name');if(!n)return;NB().secs.push({id:uid(),name:n,color:COL[NB().secs.length%COL.length],pgs:[]});cur.sec=NB().secs.length-1;cur.pg=null;save();render();return}
+  const t=e.target.closest('.tab');if(t){cur.sec=+t.dataset.i;cur.pg=null;$('#q').value='';fix();render()}};
+$('#secMenu').onclick=()=>{const a=prompt('Type a new name to rename this section, or type DELETE to remove it.',SEC().name);if(!a)return;
+  if(a==='DELETE'){if(NB().secs.length<2)return alert('Keep at least one section.');if(!confirm('Delete this section and its pages?'))return;NB().secs.splice(cur.sec,1);cur.sec=0;cur.pg=null}else SEC().name=a;save();fix();render()};
+$('#pgAdd').onclick=()=>{const p={id:uid(),title:'',html:'<p><br></p>',t:Date.now()};SEC().pgs.unshift(p);cur.pg=p.id;$('#q').value='';save();render();document.body.classList.add('edit');$('#title').focus()};
+$('#pgDel').onclick=()=>{if(!PG()||!confirm('Delete this page?'))return;const s=SEC();s.pgs=s.pgs.filter(p=>p.id!==cur.pg);cur.pg=null;save();fix();render();document.body.classList.remove('edit')};
+$('#pages').onclick=e=>{const d=e.target.closest('.pg');if(!d)return;cur.sec=+d.dataset.si;cur.pg=d.dataset.id;render();document.body.classList.add('edit')};
+$('#back').onclick=()=>document.body.classList.remove('edit');
+$('#q').oninput=renderList;
+$('#title').oninput=e=>{const p=PG();p.title=e.target.value;p.t=Date.now();save();renderList()};
+$('#body').oninput=()=>{const p=PG();p.html=$('#body').innerHTML;p.t=Date.now();save()};
+$('#body').onclick=e=>{if(e.target.type==='checkbox'){e.target.toggleAttribute('checked',e.target.checked);$('#body').oninput()}};
+$('#tools').onmousedown=e=>{if(e.target.closest('button')&&e.target.id!=='back'&&!/secMenu|pgDel/.test(e.target.id))e.preventDefault()};
+$('#tools').onclick=e=>{const b=e.target.closest('button[data-c]');if(!b)return;document.execCommand(b.dataset.c,false,b.dataset.v||null);$('#body').oninput()};
+$('#chk').onclick=()=>{document.execCommand('insertHTML',false,'<input type="checkbox">&nbsp;');$('#body').oninput()};
+$('#hl').onclick=()=>{document.execCommand('hiliteColor',false,'#ffe55c');$('#body').oninput()};
+$('#cfgBtn').onclick=()=>{const c=cfg();$('#cRepo').value=c.repo||'';$('#cTok').value=c.token||'';$('#cMsg').textContent='';$('#cfg').showModal()};
+$('#cSave').onclick=async()=>{localStorage.setItem('nbcfg',JSON.stringify({repo:$('#cRepo').value.trim(),token:$('#cTok').value.trim()}));sha=null;$('#cMsg').textContent='Connecting…';
+  await pull();$('#cMsg').textContent=$('#status').textContent;if($('#status').textContent.includes('✓'))setTimeout(()=>$('#cfg').close(),700)};
+addEventListener('beforeunload',()=>{});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull()});
+
+load();fix();render();pull();
+</script>
+</body>
+</html>
