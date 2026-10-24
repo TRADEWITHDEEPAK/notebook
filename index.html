@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>My Notebook</title>
+<meta name="theme-color" content="#7719aa">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <style>
 :root{--bg:#fff;--panel:#f5f3f7;--line:#e1dde6;--text:#201f24;--mute:#6e6a76;--acc:#7719aa;--sel:#ebdcf3;color-scheme:light}
 @media (prefers-color-scheme:dark){:root{--bg:#1c1b20;--panel:#26242b;--line:#3a3742;--text:#ececf0;--mute:#9a96a3;--acc:#c28be3;--sel:#3b2a47;color-scheme:dark}}
@@ -51,6 +54,15 @@ dialog p{font-size:13px;color:var(--mute)}
 #list{width:100%;border:0}#ed{display:none}
 body.edit #list{display:none}body.edit #ed{display:flex}
 #back{display:inline-block}#title{font-size:22px;padding:12px 16px 0}#when{padding:0 16px 8px}#body{padding:8px 16px 60px}}
+#body table{border-collapse:collapse;margin:8px 0;max-width:100%}
+#body td{border:1px solid var(--line);padding:6px 10px;min-width:70px;vertical-align:top}
+#body img{max-width:100%;height:auto;border-radius:4px}
+#lock{position:fixed;inset:0;z-index:50;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;text-align:center}
+#lock[hidden]{display:none}
+#lock input{padding:9px 10px;border:1px solid var(--line);border-radius:6px;width:260px;max-width:100%;background:var(--bg)}
+#lock button{background:var(--acc);color:#fff}#lock #lockX{background:none;color:var(--text)}
+#drw{max-width:740px}#drw canvas{width:100%;height:auto;border:1px solid var(--line);border-radius:4px;touch-action:none;cursor:crosshair;background:#fff}
+.dt{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}.dt input[type=color]{width:38px;height:30px;padding:0}.dt input[type=range]{width:110px;padding:0}
 </style>
 </head>
 <body>
@@ -59,7 +71,7 @@ body.edit #list{display:none}body.edit #ed{display:flex}
   <button id="nbAdd" title="New notebook">+ Notebook</button>
   <button id="nbMenu" title="Rename or delete notebook">⋯</button>
   <span class="sp"></span><span id="status"></span>
-  <button id="cfgBtn">Sync</button>
+  <button id="lockBtn">🔒 Lock</button><button id="cfgBtn">Sync</button>
 </div>
 <div id="tabs"></div>
 <div id="main">
@@ -75,6 +87,8 @@ body.edit #list{display:none}body.edit #ed{display:flex}
       <button data-c="formatBlock" data-v="h2">Heading</button><button data-c="formatBlock" data-v="p">Text</button>
       <button data-c="insertUnorderedList">• List</button><button data-c="insertOrderedList">1. List</button>
       <button id="chk">☐ To‑do</button><button id="hl">Highlight</button>
+      <button id="imgBtn">Image</button><button id="drawBtn">Draw</button>
+      <button data-t="new">Table</button><button data-t="row">+ Row</button><button data-t="col">+ Column</button><button data-t="del">Delete table</button>
       <button id="secMenu" title="Rename or delete section">Section ⋯</button><button id="pgDel">Delete page</button>
     </div>
     <input id="title" placeholder="Untitled page" aria-label="Page title">
@@ -83,6 +97,13 @@ body.edit #list{display:none}body.edit #ed{display:flex}
   </section>
 </div>
 
+<form id="lock" hidden><h2 id="lockMsg" style="margin:0;max-width:340px">Enter your password</h2><input id="lockPw" type="password" autocomplete="current-password" aria-label="Password"><div><button>Unlock</button> <button type="button" id="lockX">Cancel</button></div></form>
+<input type="file" id="imgIn" accept="image/*" multiple hidden>
+<dialog id="drw"><form method="dialog">
+  <div class="dt"><button type="button" id="dpen">✏️ Pen</button><button type="button" id="der">Eraser</button><input id="dc" type="color" value="#201f24" aria-label="Color"><input id="dw" type="range" min="1" max="24" value="3" aria-label="Size"><button type="button" id="dclr">Clear</button></div>
+  <canvas id="cv" width="700" height="420"></canvas>
+  <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button value="x">Cancel</button><button type="button" id="dins" style="background:var(--acc);color:#fff">Insert drawing</button></div>
+</form></dialog>
 <dialog id="cfg"><form method="dialog">
   <h3 style="margin-top:0">Sync across devices</h3>
   <p>Notes always save on this device. To use them on other devices, add a private GitHub repo and an access token. Do this once on every device.</p>
@@ -98,22 +119,22 @@ const COL=['#7719aa','#0f6cbd','#107c10','#d83b01','#b4009e','#008272'];
 let S,cur={nb:0,sec:0,pg:null},sha=null,timer=null,busy=false;
 
 const fresh=()=>({updated:0,nbs:[{id:uid(),name:'My Notebook',secs:[{id:uid(),name:'Quick Notes',color:COL[0],pgs:[{id:uid(),title:'Welcome',t:Date.now(),html:'<p>Click here and start typing. Use the toolbar for headings, lists and to-dos.</p><p>Open <b>Sync</b> (top right) to use these notes on all your devices.</p>'}]}]}]});
-function load(){try{S=JSON.parse(localStorage.getItem('nb'))}catch(e){}if(!S||!S.nbs||!S.nbs.length)S=fresh()}
+async function load(){const raw=localStorage.getItem('nb');try{if(raw)S=await unpack(raw)}catch(e){}if(!S||!S.nbs||!S.nbs.length)S=fresh()}
 const cfg=()=>{try{return JSON.parse(localStorage.getItem('nbcfg'))||{}}catch(e){return{}}};
 const NB=()=>S.nbs[cur.nb]||S.nbs[0], SEC=()=>NB().secs[cur.sec]||NB().secs[0], PG=()=>SEC()&&SEC().pgs.find(p=>p.id===cur.pg);
 const status=t=>$('#status').textContent=t;
 
-function save(){S.updated=Date.now();localStorage.setItem('nb',JSON.stringify(S));clearTimeout(timer);timer=setTimeout(push,1500);}
+async function save(){S.updated=Date.now();try{localStorage.setItem('nb',await pack(S))}catch(e){status('Device storage full – delete images')}clearTimeout(timer);timer=setTimeout(push,1500);}
 
 /* ---------- GitHub sync ---------- */
 const enc=s=>btoa(unescape(encodeURIComponent(s))), dec=s=>decodeURIComponent(escape(atob(s.replace(/\n/g,''))));
-function api(method,body){const c=cfg();return fetch(`https://api.github.com/repos/${c.repo}/contents/notes.json`,{method,headers:{Authorization:'Bearer '+c.token,Accept:'application/vnd.github+json'},body:body&&JSON.stringify(body)})}
+function api(method,body,raw){const c=cfg();return fetch(`https://api.github.com/repos/${c.repo}/contents/notes.json`,{method,headers:{Authorization:'Bearer '+c.token,Accept:raw?'application/vnd.github.raw+json':'application/vnd.github+json'},body:body&&JSON.stringify(body)})}
 async function pull(){
   const c=cfg();if(!c.repo||!c.token){status('Saved on this device');return}
   try{status('Syncing…');const r=await api('GET');
     if(r.status===404){sha=null;await push();return}
-    if(!r.ok)throw 0;const j=await r.json();sha=j.sha;const remote=JSON.parse(dec(j.content));
-    if(remote.updated>S.updated){S=remote;localStorage.setItem('nb',JSON.stringify(S));fix();render()}
+    if(!r.ok)throw 0;const j=await r.json();sha=j.sha;const remote=await unpack(j.content?dec(j.content):await(await api('GET',null,1)).text());
+    if(remote.updated>S.updated){S=remote;localStorage.setItem('nb',await pack(S));fix();render()}
     else if(remote.updated<S.updated)await push();
     status('Synced ✓')}catch(e){status('Sync failed – check Sync settings')}
 }
@@ -121,7 +142,7 @@ async function push(){
   const c=cfg();if(!c.repo||!c.token||busy){if(!c.repo)status('Saved on this device');return}
   busy=true;
   try{status('Syncing…');
-    const body={message:'Update notes',content:enc(JSON.stringify(S))};if(sha)body.sha=sha;
+    const body={message:'Update notes',content:enc(await pack(S))};if(sha)body.sha=sha;
     let r=await api('PUT',body);
     if(r.status===409||r.status===422){const g=await api('GET');if(g.ok){sha=(await g.json()).sha;body.sha=sha;r=await api('PUT',body)}}
     if(!r.ok)throw 0;sha=(await r.json()).content.sha;status('Synced ✓')}
@@ -178,7 +199,57 @@ $('#cSave').onclick=async()=>{localStorage.setItem('nbcfg',JSON.stringify({repo:
 addEventListener('beforeunload',()=>{});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)pull()});
 
-load();fix();render();pull();
+/* ---------- password lock (AES-GCM, key from password via PBKDF2) ---------- */
+let PW=null,keys={};
+const b64=u=>{const a=new Uint8Array(u);let s='';for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));return btoa(s)};
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function key(salt){if(keys[salt])return keys[salt];const m=await crypto.subtle.importKey('raw',new TextEncoder().encode(PW),'PBKDF2',false,['deriveKey']);return keys[salt]=await crypto.subtle.deriveKey({name:'PBKDF2',salt:unb64(salt),iterations:150000,hash:'SHA-256'},m,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function pack(o){const j=JSON.stringify(o);if(!PW)return j;const salt=localStorage.getItem('nbsalt'),iv=crypto.getRandomValues(new Uint8Array(12));const d=await crypto.subtle.encrypt({name:'AES-GCM',iv},await key(salt),new TextEncoder().encode(j));return JSON.stringify({enc:1,s:salt,iv:b64(iv),d:b64(d)})}
+async function unpack(str){const o=JSON.parse(str);if(!o.enc)return o;let m='Enter your password';
+  while(true){if(!PW)PW=await askPW(m);try{const p=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},await key(o.s),unb64(o.d));localStorage.setItem('nbsalt',o.s);return JSON.parse(new TextDecoder().decode(p))}catch(e){PW=null;keys={};m='Wrong password. Try again.'}}}
+const askPW=(msg,cancel)=>new Promise(r=>{$('#lockMsg').textContent=msg||'Enter your password';$('#lockX').hidden=!cancel;$('#lock').hidden=false;$('#lockPw').value='';$('#lockPw').focus();
+  $('#lock').onsubmit=e=>{e.preventDefault();const v=$('#lockPw').value;if(!v)return;$('#lockPw').value='';$('#lock').hidden=true;r(v)};
+  $('#lockX').onclick=()=>{$('#lock').hidden=true;r(null)}});
+async function setPW(){const a=await askPW('Choose a password. If you forget it, your notes cannot be recovered.',1);if(!a)return;const b=await askPW('Type the password again',1);if(!b)return;if(a!==b)return alert('The passwords did not match.');
+  PW=a;keys={};localStorage.setItem('nbsalt',b64(crypto.getRandomValues(new Uint8Array(16))));await save();status('Password lock is on')}
+$('#lockBtn').onclick=async()=>{
+  if(!PW)return setPW();
+  const a=(prompt('Type LOCK to lock now, CHANGE to set a new password, or REMOVE to turn the lock off.')||'').trim().toUpperCase();
+  if(a==='LOCK')location.reload();else if(a==='CHANGE')setPW();else if(a==='REMOVE'){PW=null;keys={};await save();status('Password lock is off')}};
+
+/* ---------- insert helpers, images, drawing, tables ---------- */
+let rng=null;
+document.addEventListener('selectionchange',()=>{const s=getSelection();if(s.rangeCount&&$('#body').contains(s.anchorNode))rng=s.getRangeAt(0).cloneRange()});
+function ins(h){const b=$('#body');b.focus();if(rng){const s=getSelection();s.removeAllRanges();s.addRange(rng)}document.execCommand('insertHTML',false,h);b.oninput()}
+function addImg(f){const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas'),x=c.getContext('2d');c.width=im.width*k;c.height=im.height*k;x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ins('<img src="'+c.toDataURL('image/jpeg',.72)+'"><p><br></p>')};im.src=u}
+$('#imgBtn').onclick=()=>$('#imgIn').click();
+$('#imgIn').onchange=e=>{[...e.target.files].forEach(addImg);e.target.value=''};
+$('#body').onpaste=e=>{const f=[...e.clipboardData.files].filter(x=>x.type.startsWith('image/'));if(f.length){e.preventDefault();f.forEach(addImg)}};
+$('#body').ondblclick=e=>{if(e.target.tagName==='IMG'&&confirm('Remove this image?')){e.target.remove();$('#body').oninput()}};
+
+const dv=$('#cv'),dx=dv.getContext('2d');let dn=false,er=false;
+const dclear=()=>{dx.fillStyle='#fff';dx.fillRect(0,0,dv.width,dv.height)};
+const pt=e=>{const r=dv.getBoundingClientRect();return[(e.clientX-r.left)*dv.width/r.width,(e.clientY-r.top)*dv.height/r.height]};
+function dr(e,first){const p=pt(e);dx.lineCap=dx.lineJoin='round';dx.lineWidth=$('#dw').value*(er?4:1);dx.strokeStyle=er?'#fff':$('#dc').value;if(first){dx.beginPath();dx.moveTo(p[0],p[1])}dx.lineTo(p[0]+(first?.1:0),p[1]);dx.stroke()}
+dv.onpointerdown=e=>{dn=true;dv.setPointerCapture(e.pointerId);dr(e,true)};
+dv.onpointermove=e=>{if(dn)dr(e)};
+dv.onpointerup=dv.onpointercancel=()=>dn=false;
+$('#drawBtn').onclick=()=>{dclear();er=false;$('#drw').showModal()};
+$('#dpen').onclick=()=>er=false;$('#der').onclick=()=>er=true;$('#dclr').onclick=dclear;
+$('#dins').onclick=()=>{$('#drw').close();ins('<img src="'+dv.toDataURL('image/png')+'"><p><br></p>')};
+
+const cell=()=>{const n=getSelection().anchorNode;return n&&(n.nodeType==3?n.parentNode:n).closest('td')};
+function tbl(a){
+  if(a==='new'){const v=(prompt('Rows x columns','3x3')||'').toLowerCase().split('x').map(Number),r=v[0],c=v[1];if(!(r>0&&c>0&&r<50&&c<12))return;ins('<table>'+('<tr>'+'<td><br></td>'.repeat(c)+'</tr>').repeat(r)+'</table><p><br></p>');return}
+  const td=cell();if(!td||!$('#body').contains(td))return alert('Click inside a table cell first.');
+  const tr=td.parentNode,t=tr.closest('table');
+  if(a==='row'){const n=tr.cloneNode(true);n.querySelectorAll('td').forEach(x=>x.innerHTML='<br>');tr.after(n)}
+  if(a==='col'){const i=td.cellIndex;t.querySelectorAll('tr').forEach(r=>{const c=document.createElement('td');c.innerHTML='<br>';r.cells[i].after(c)})}
+  if(a==='del'){if(!confirm('Delete this table?'))return;t.remove()}
+  $('#body').oninput()}
+$('#tools').addEventListener('click',e=>{const b=e.target.closest('[data-t]');if(b)tbl(b.dataset.t)});
+
+(async()=>{await load();fix();render();pull()})();
 </script>
 </body>
 </html>
