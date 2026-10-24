@@ -51,6 +51,7 @@ button:hover{background:var(--sel)}
 #body [style*="background-color"],#body mark{color:var(--ink)}
 #body table{border-collapse:collapse;margin:8px 0;max-width:100%}
 #body td{border:1px solid var(--line);padding:6px 10px;min-width:70px;vertical-align:top}
+#body a{color:var(--acc);text-decoration:underline;cursor:pointer;word-break:break-all}
 #body img{max-width:100%;height:auto;border-radius:4px}
 dialog{border:1px solid var(--line);border-radius:14px;background:var(--panel);color:var(--text);max-width:440px;width:92vw}
 dialog::backdrop{background:rgba(5,9,22,.7)}
@@ -220,7 +221,12 @@ function ins(h){const b=$('#body');b.focus();if(rng){const s=getSelection();s.re
 function addImg(f){const u=URL.createObjectURL(f),im=new Image();im.onload=()=>{const k=Math.min(1,1000/Math.max(im.width,im.height)),c=document.createElement('canvas'),x=c.getContext('2d');c.width=im.width*k;c.height=im.height*k;x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ins('<img src="'+c.toDataURL('image/jpeg',.72)+'"><p><br></p>')};im.src=u}
 $('#imgBtn').onclick=()=>$('#imgIn').click();
 $('#imgIn').onchange=e=>{[...e.target.files].forEach(addImg);e.target.value=''};
-$('#body').onpaste=e=>{const f=[...e.clipboardData.files].filter(x=>x.type.startsWith('image/'));if(f.length){e.preventDefault();f.forEach(addImg)}};
+const linkify=t=>{let o='',i=0;t.replace(/(https?:\/\/|www\.)[^\s<>"']+/gi,(m,_p,off)=>{const u=m.replace(/[.,;:!?)\]]+$/,'');o+=esc(t.slice(i,off))+'<a href="'+esc(/^www\./i.test(u)?'https://'+u:u)+'" target="_blank" rel="noopener noreferrer">'+esc(u)+'</a>';i=off+u.length;return m});return(o+esc(t.slice(i))).replace(/\r?\n/g,'<br>')};
+$('#body').onpaste=e=>{const d=e.clipboardData,f=[...d.files].filter(x=>x.type.startsWith('image/'));
+  if(f.length){e.preventDefault();f.forEach(addImg);return}
+  const t=d.getData('text/plain');
+  if(/(https?:\/\/|www\.)\S/i.test(t)&&!/<a\s/i.test(d.getData('text/html'))){e.preventDefault();ins(linkify(t))}};
+$('#body').addEventListener('click',e=>{const a=e.target.closest('a[href]');if(a){e.preventDefault();if(/^https?:/i.test(a.href))window.open(a.href,'_blank','noopener')}});
 $('#body').ondblclick=e=>{if(e.target.tagName==='IMG'&&confirm('Remove this image?')){e.target.remove();$('#body').oninput()}};
 
 const dv=$('#cv'),dx=dv.getContext('2d');let dn=false,er=false;
