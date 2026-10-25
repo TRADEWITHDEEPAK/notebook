@@ -34,6 +34,9 @@ Your notes are NOT stored in this repo. They live in a second, private repo (`my
 
 - Navy and gold, four-column layout: Notebooks, Sections, Tabs, and the selected tab's content
 - Search across a notebook
+- Notebooks, Sections and Tabs sit in a row at the top; the whole document is shown full width below, with every tab one after another (or side by side)
+- One **Edit** dropdown holds all formatting, insert and table options
+- Pasted web content is cleaned so it matches the navy theme
 - Bold, italic, underline, strikethrough, headings, lists, to-dos, highlight
 - Tables (insert, add row, add column, delete)
 - Images (upload or paste; auto-resized; double-click an image to remove it)
